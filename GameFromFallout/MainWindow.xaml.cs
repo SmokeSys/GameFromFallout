@@ -23,20 +23,37 @@ namespace GameFromFallout
     /// </summary>
     public partial class MainWindow : Window
     {
-        string difficult; string ssimvols = ";:#@!$%^&*()-=+{}[],./?<>~`"; int lifesv, scorev = 0; SettingsRecords s; Random r;
-        Button tempColor; string answer; Label l, score, lifes; List<Label> labels; bool cont = false, rest = false;
+#region Fields
+        string difficulty; 
+        string spamSybmols = ";:#@!$%^&*()-=+{}[],./?<>~`"; 
+        int lifesValue, scoreValue = 0; 
+        SettingsRecords setRec; 
+        Random random;
+        Button tempButton;  //tak i ne vspomnil, zachem eto nujno :( 
+        string answer; 
+        Label tempLabel, score, lifes; 
+        List<Label> labels; 
+        bool cont = false, rest = false;
+        #endregion
+
+        #region Constructor
         public MainWindow()
         {
             InitializeComponent(); 
+
             Uri iconUri = new Uri("Icon.ico", UriKind.RelativeOrAbsolute);
             WindowMain.Icon = BitmapFrame.Create(iconUri);
+
             ImageBrush ib = new ImageBrush();
             ib.ImageSource = new BitmapImage(new Uri(@"assets\backgroundImage.png", UriKind.Relative));
             canvasMain.Background = ib;
-            r = new Random();
+
+            random = new Random();
+
             Canvas rec = new Canvas();
             rec.Height = 40;
             rec.Width = 60;
+
             ImageBrush ibb = new ImageBrush();
             ibb.ImageSource = new BitmapImage(new Uri(@"assets\powerOn.png", UriKind.Relative));
             rec.Background = ibb;
@@ -44,85 +61,87 @@ namespace GameFromFallout
             Canvas.SetTop(rec, 525);
             canvasMain.Children.Add(rec);
             rec.MouseLeftButtonUp += new MouseButtonEventHandler(exitButton);
-            tempColor = Easy;
+
+            tempButton = Easy;
+
             canvasSec.Children.Remove(Back);
         }
-        private void exitButton(object sender, MouseEventArgs e)
-        {
-            Close();
-        }
+        #endregion
 
-        private void StartEasy(object sender, RoutedEventArgs e)
-        {
-            difficult = "easy";
-            Start();
-        }
-
-        private void StartMedium(object sender, RoutedEventArgs e)
-        {
-            difficult = "medium";
-            Start();
-        }
-
-        private void StartHard(object sender, RoutedEventArgs e)
-        {
-            difficult = "hard";
-            Start();
-        }
+        #region Methods
+        /// <summary>
+        /// Initializes main field
+        /// </summary>
         private void Start()
         {
+            //clears the area
             canvasSec.Children.Clear();
             canvasSec.Children.Add(Back);
             if (labels != null) labels.Clear();
-            if (difficult == "easy")
-                tempColor = Medium;
-            else tempColor = Easy;
-            //TextBox tb = new TextBox();
-            if (scorev == 0)
+
+            //*???*
+            if (difficulty == "easy")
+                tempButton = Medium;
+            else tempButton = Easy;
+
+            //*creating a label for display the score*
+            if (scoreValue == 0)
             {
                 score = new Label();
                 score.Content = "SOMCO INDUSTRIES (TM) TERMINAL PROTOCOL \nENTER THE PASSWORD";
-                score.FontSize = tempColor.FontSize + 2;
-                score.FontStyle = tempColor.FontStyle;
-                score.FontFamily = tempColor.FontFamily;
-                score.BorderBrush = tempColor.BorderBrush;
+                score.FontSize = tempButton.FontSize + 2;
+                score.FontStyle = tempButton.FontStyle;
+                score.FontFamily = tempButton.FontFamily;
+                score.BorderBrush = tempButton.BorderBrush;
                 score.Cursor = Cursors.Arrow;
-                score.FocusVisualStyle = tempColor.FocusVisualStyle;
-                score.Foreground = tempColor.Foreground;
-                score.Background = tempColor.Background;
+                score.FocusVisualStyle = tempButton.FocusVisualStyle;
+                score.Foreground = tempButton.Foreground;
+                score.Background = tempButton.Background;
                 Canvas.SetLeft(score, 20);
                 Canvas.SetTop(score, 20);
             }
             canvasSec.Children.Add(score);
-            if (difficult == "hard") lifesv = 2;
-            else lifesv = 3;
+
+            //*creating a label for display the lifes*
+            if (difficulty == "hard") lifesValue = 2;
+            else lifesValue = 3;
             lifes = new Label();
-            lifes.Content = "TRIES LEFT: " + (lifesv + 1).ToString();
-            lifes.FontSize = tempColor.FontSize;
-            lifes.FontStyle = tempColor.FontStyle;
-            lifes.FontFamily = tempColor.FontFamily;
-            lifes.BorderBrush = tempColor.BorderBrush;
+            lifes.Content = "TRIES LEFT: " + (lifesValue + 1).ToString();
+            lifes.FontSize = tempButton.FontSize;
+            lifes.FontStyle = tempButton.FontStyle;
+            lifes.FontFamily = tempButton.FontFamily;
+            lifes.BorderBrush = tempButton.BorderBrush;
             lifes.Cursor = Cursors.Arrow;
-            lifes.FocusVisualStyle = tempColor.FocusVisualStyle;
-            lifes.Foreground = tempColor.Foreground;
-            lifes.Background = tempColor.Background;
+            lifes.FocusVisualStyle = tempButton.FocusVisualStyle;
+            lifes.Foreground = tempButton.Foreground;
+            lifes.Background = tempButton.Background;
             Canvas.SetLeft(lifes, 20);
             Canvas.SetTop(lifes, 80);
             canvasSec.Children.Add(lifes);
+            //
 
-            
 
+            //---birthday gift opening--- 
+            //*get words from file*
             XmlSerializer xs = new XmlSerializer(typeof(SettingsRecords));
             Stream fstr = null;
             fstr = File.OpenRead("assets/settings.xml");
-            s = (SettingsRecords)xs.Deserialize(fstr);
-            if (s.WordsCount == 0)
-                s.UpdateWords();
-            s.Difficult = difficult;
+            setRec = (SettingsRecords)xs.Deserialize(fstr);
+            if (setRec.WordsCount == 0)
+            {
+                try { setRec.UpdateWords(); }                
+                catch { MessageBox.Show("word.txt file empty or doesnt exist"); Close(); }
+                if (setRec.WordsCount < 10)
+                {
+                    MessageBox.Show("Update word.txt file"); Close();
+                }
+            }
+            setRec.Difficult = difficulty;
             fstr.Close();
 
+            //*creating address buttons (ex.0x00AAAA)*
             List<Button> fieldAdresses = new List<Button>();
-            int j = 0; int ti = 0;
+            int j = 0; int ti = 0;  // for positioning
             for (int i = 0; i < 28; i++)
             {
                 fieldAdresses.Add(new Button());
@@ -131,7 +150,7 @@ namespace GameFromFallout
                 {
                     fieldAdresses[i].Content += "0x" + To16SS() + To16SS() + To16SS() + To16SS();
                 }
-                else fieldAdresses[i].Content = Add((string)fieldAdresses[i - 1].Content);
+                else fieldAdresses[i].Content = To16Add((string)fieldAdresses[i - 1].Content);
                 Canvas.SetLeft(fieldAdresses[i], 25 + j);
                 Canvas.SetTop(fieldAdresses[i], 110 + ti * 20);
                 ti++;
@@ -139,20 +158,26 @@ namespace GameFromFallout
                 canvasSec.Children.Add(fieldAdresses[i]);
                 fieldAdresses[i].MouseEnter += new MouseEventHandler(MouseEnterStartButtons);
                 fieldAdresses[i].MouseLeave += new MouseEventHandler(MouseEnterStartButtons);
-            }   //adresses
+            }   
 
+            //*creating the main field*
             List<Button> field = new List<Button>();
-            ti = 0; j = 0; int tj = 0;
-            List<string> temp;
-            List<string> variantes = new List<string>();
-            if (difficult == "easy") temp = s.EasyWords;
-            else if (difficult == "medium") temp = s.MediumWords;
-            else temp = s.HardWords;
-            int insword = r.Next(0, 4); int count = 0;            
+            ti = 0; j = 0; int tj = 0; //for positioning
+            List<string> tempWordsList;
+            List<string> variantes = new List<string>(); //words in this cycle
+            switch (difficulty)
+            {
+                case "easy": tempWordsList = setRec.EasyWords; break;
+                case "medium": tempWordsList = setRec.MediumWords; break;
+                default: tempWordsList = setRec.HardWords; break;
+            }
+            int insword = random.Next(0, 4); int count = 0; 
+            //*main content creator*
             for (int i = 0; i < 28; i++)
             {
+                //looks like spam generator
                 if (i != insword)
-                {
+                {                    
                     for (int k = 100; k < 300; k+=10)
                     {
                         field.Add(new Button());
@@ -162,17 +187,23 @@ namespace GameFromFallout
                         field[count].MouseEnter += new MouseEventHandler(MouseEnterStartButtons);
                         field[count].MouseLeave += new MouseEventHandler(MouseEnterStartButtons);
                         field[count].Click += new RoutedEventHandler(ClickToWord);
-                        field[count].Content = ssimvols[r.Next(0, ssimvols.Length)];
+                        field[count].Content = spamSybmols[random.Next(0, spamSybmols.Length)];
                         canvasSec.Children.Add(field[count]);
                         count++;
                     }
                 }
+                //*words generator*
                 if (i == insword)
                 {
-                    int upk; int k;
-                    if (difficult == "easy") upk = r.Next(0, 20);
-                    else if (difficult == "medium") upk = r.Next(0, 15);
-                    else upk = r.Next(0, 10);
+                    int upk; //???
+                    int k;
+                    switch (difficulty)
+                    {
+                        case "easy": upk = random.Next(0, 20); break;
+                        case "medium": upk = random.Next(0, 15); break;
+                        default: upk = random.Next(0, 10); break;
+                    }
+                    //another spam generator
                     for (k = 100; k < 50 + upk * 10; k += 10)
                     {
                         field.Add(new Button());
@@ -182,10 +213,12 @@ namespace GameFromFallout
                         field[count].MouseEnter += new MouseEventHandler(MouseEnterStartButtons);
                         field[count].MouseLeave += new MouseEventHandler(MouseEnterStartButtons);
                         field[count].Click += new RoutedEventHandler(ClickToWord);
-                        field[count].Content = ssimvols[r.Next(0, ssimvols.Length)];
+                        field[count].Content = spamSybmols[random.Next(0, spamSybmols.Length)];
                         canvasSec.Children.Add(field[count]);
                         count++;
                     }
+
+                    //word buttons formatter
                     field.Add(new Button());
                     NewButton(field[count]);
                     Canvas.SetLeft(field[count], k + tj);
@@ -194,12 +227,13 @@ namespace GameFromFallout
                     field[count].MouseEnter += new MouseEventHandler(MouseEnterStartButtons);
                     field[count].MouseLeave += new MouseEventHandler(MouseEnterStartButtons);
                     field[count].Click += new RoutedEventHandler(ClickToWord);
-                    field[count].Content = temp[r.Next(0, temp.Count)];
+                    field[count].Content = tempWordsList[random.Next(0, tempWordsList.Count)];
                     variantes.Add((string)field[count].Content);
-                    insword = r.Next(i + 1, i + 5);
+                    insword = random.Next(i + 1, i + 5);
                     canvasSec.Children.Add(field[count]);
                     k += 90;
                     count++;
+                    //spam generator, heh
                     for (; k < 300; k += 10)
                     {
                         field.Add(new Button());
@@ -209,7 +243,7 @@ namespace GameFromFallout
                         field[count].MouseEnter += new MouseEventHandler(MouseEnterStartButtons);
                         field[count].MouseLeave += new MouseEventHandler(MouseEnterStartButtons);
                         field[count].Click += new RoutedEventHandler(ClickToWord);
-                        field[count].Content = ssimvols[r.Next(0, ssimvols.Length)];
+                        field[count].Content = spamSybmols[random.Next(0, spamSybmols.Length)];
                         canvasSec.Children.Add(field[count]);
                         count++;
                     }
@@ -217,69 +251,85 @@ namespace GameFromFallout
                 ti++;
                 if (i == 13) { ti = 0; tj = 310; }
             }
-            answer = variantes[r.Next(0,variantes.Count)];
-            l = new Label();
-            l.FontSize = tempColor.FontSize + 3;
-            l.FontStyle = tempColor.FontStyle;
-            l.FontFamily = tempColor.FontFamily;
-            l.BorderBrush = tempColor.BorderBrush;
-            l.Cursor = Cursors.Arrow;
-            l.FocusVisualStyle = tempColor.FocusVisualStyle;
-            l.Foreground = tempColor.Foreground;
-            l.Background = tempColor.Background;
-            l.Content = '>';
-            Canvas.SetLeft(l, 615);
-            Canvas.SetTop(l, 365);
-            canvasSec.Children.Add(l);
+            //*choosing the correct answer*
+            answer = variantes[random.Next(0,variantes.Count)];
+            // label ">" for decoration 
+            tempLabel = new Label();
+            tempLabel.FontSize = tempButton.FontSize + 3;
+            tempLabel.FontStyle = tempButton.FontStyle;
+            tempLabel.FontFamily = tempButton.FontFamily;
+            tempLabel.BorderBrush = tempButton.BorderBrush;
+            tempLabel.Cursor = Cursors.Arrow;
+            tempLabel.FocusVisualStyle = tempButton.FocusVisualStyle;
+            tempLabel.Foreground = tempButton.Foreground;
+            tempLabel.Background = tempButton.Background;
+            tempLabel.Content = '>';
+            Canvas.SetLeft(tempLabel, 615);
+            Canvas.SetTop(tempLabel, 365);
+            canvasSec.Children.Add(tempLabel);
+
             labels = new List<Label>();
         }
+        /// <summary>
+        /// Handles clicks on a word/spam
+        /// </summary>
+        /// <param name="sender">Word and Spam Buttons from main field</param>
+        /// <param name="e"></param>
         private void ClickToWord(object sender, RoutedEventArgs e)
         {
-            if (!cont)
+            if (!cont)  //bool continue, true if an answer is found
             {
                 Button temp = (Button)e.Source;
                 if (temp.Content == answer)
                 {
+                    //clears the right part
                     for (int i = 0; i < labels.Count; i++)
                         canvasSec.Children.Remove(labels[i]);
                     labels.Clear();
                 }
+                //answer decorations
                 labels.Add(new Label());
-                labels[labels.Count - 1].FontSize = tempColor.FontSize + 1;
-                labels[labels.Count - 1].FontStyle = tempColor.FontStyle;
-                labels[labels.Count - 1].FontFamily = tempColor.FontFamily;
-                labels[labels.Count - 1].BorderBrush = tempColor.BorderBrush;
+                labels[labels.Count - 1].FontSize = tempButton.FontSize + 1;
+                labels[labels.Count - 1].FontStyle = tempButton.FontStyle;
+                labels[labels.Count - 1].FontFamily = tempButton.FontFamily;
+                labels[labels.Count - 1].BorderBrush = tempButton.BorderBrush;
                 labels[labels.Count - 1].Cursor = Cursors.Arrow;
-                labels[labels.Count - 1].FocusVisualStyle = tempColor.FocusVisualStyle;
-                labels[labels.Count - 1].Foreground = tempColor.Foreground;
-                labels[labels.Count - 1].Background = tempColor.Background;
+                labels[labels.Count - 1].FocusVisualStyle = tempButton.FocusVisualStyle;
+                labels[labels.Count - 1].Foreground = tempButton.Foreground;
+                labels[labels.Count - 1].Background = tempButton.Background;
                 labels[labels.Count - 1].Content = temp.Content;
                 Canvas.SetLeft(labels[labels.Count - 1], 615);
                 Canvas.SetTop(labels[labels.Count - 1], 365 - labels.Count * 80);
                 canvasSec.Children.Add(labels[labels.Count - 1]);
+                //winning label
                 if (temp.Content == answer)
                 {
                     labels[labels.Count - 1].Content += "\nACCESS GRANTED\nPRESS ANY KEY \nTO CONTINUE";
                     cont = true;
-                    scorev++;
-                    score.Content = "SOMCO INDUSTRIES (TM) TERMINAL PROTOCOL X" + (scorev).ToString() + "\nENTER THE PASSWORD";
+                    scoreValue++;
+                    score.Content = "SOMCO INDUSTRIES (TM) TERMINAL PROTOCOL X" + (scoreValue).ToString() + "\nENTER THE PASSWORD";
                     return;
                 }
+                //*click wrong*
                 string tmp;
                 int tmplength;
-                if (difficult == "easy") tmplength = 6;
-                else if (difficult == "medium") tmplength = 10;
-                else tmplength = 12;
+                switch (difficulty)
+                {
+                    case "easy": tmplength = 6; break;
+                    case "medium": tmplength = 10; break;
+                    default: tmplength = 12; break;
+                }
                 try
                 {
                     tmp = (string)temp.Content;
                 }
+                //displays selection on the right side, shows errors and subtracts lives
                 catch
                 {
                     labels[labels.Count - 1].Content += "\nACCESS DENIED" + "\n0/" + tmplength.ToString() + " CORRECT";
-                    lifesv--;
-                    lifes.Content = "TRIES LEFT: " + (lifesv + 1).ToString();
-                    if (lifesv < 0)
+                    lifesValue--;
+                    lifes.Content = "TRIES LEFT: " + (lifesValue + 1).ToString();
+                    if (lifesValue < 0)
                     {
                         canvasSec.Children.Clear();
                         Canvas.SetLeft(lifes, 300);
@@ -287,48 +337,116 @@ namespace GameFromFallout
                         canvasSec.Children.Add(lifes);
                         lifes.Content = "TERMINAL IS LOCKED.\nPLEASE CONTACT TO SYSTEM ADMINISTRATOR\nPRESS BACK KEY TO RESTART GAME";
                         rest = true;
-                        scorev = 0;
+                        scoreValue = 0;
                         canvasSec.Children.Add(Back);
                     }
                     return;
                 }
-                if (lifesv <= 0)
+                //no life :(
+                if (lifesValue <= 0)
                 {
                     canvasSec.Children.Clear();
                     Canvas.SetLeft(lifes, 300);
                     Canvas.SetTop(lifes, 200);
                     lifes.Content = "TERMINAL IS LOCKED.\nPLEASE CONTACT TO SYSTEM ADMINISTRATOR\nPRESS BACK KEY TO RESTART GAME";
                     rest = true;
-                    scorev = 0;
+                    scoreValue = 0;
                     canvasSec.Children.Add(Back);
                     canvasSec.Children.Add(lifes);
                     return;
                 }
+                //oh, there are still a few lifes!
                 int corrects = 0;
                 for (int i = 0; i < tmplength; i++)
                 {
                     if (answer[i] == tmp[i]) corrects++;
                 }
                 labels[labels.Count - 1].Content += "\nACCESS DENIED" + "\n" + corrects.ToString() + "/" + tmplength.ToString() + " CORRECT";
-                lifesv--;
-                lifes.Content = "TRIES LEFT: " + (lifesv + 1).ToString();
+                lifesValue--;
+                lifes.Content = "TRIES LEFT: " + (lifesValue + 1).ToString();
             }
         }
+
+        #endregion
+
+        #region HelpersMethods
+
+        /// <summary>
+        /// Initializes next level
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void PressDownKey(object sender, KeyEventArgs e)
+        {
+            if (rest)
+            {
+                rest = false;
+
+                canvasSec.Children.Clear();
+                canvasSec.Children.Add(Easy);
+                canvasSec.Children.Add(Medium);
+                canvasSec.Children.Add(Hard);
+            }
+            if (cont)
+            {
+                cont = false;
+                Start();
+            }
+        }
+
+        /// <summary>
+        /// Return to home screen
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BackToMenu(object sender, RoutedEventArgs e)
+        {
+            canvasSec.Children.Clear();
+            canvasSec.Children.Add(Easy);
+            canvasSec.Children.Add(Medium);
+            canvasSec.Children.Add(Hard);
+        }
+
+        /// <summary>
+        /// Changes the display of button
+        /// </summary>
+        /// <param name="sender">Choosen button</param>
+        /// <param name="e"></param>
+        private void MouseEnterStartButtons(object sender, MouseEventArgs e)
+        {
+            Button temp1 = (Button)e.Source;
+            Brush temp = temp1.Background;
+            temp1.Background = temp1.Foreground;
+            temp1.BorderBrush = temp1.Foreground;
+            temp1.Foreground = temp;
+            if (tempLabel != null && !cont)
+                tempLabel.Content = ">" + temp1.Content;
+        }
+
+        /// <summary>
+        /// Creates a button by template
+        /// </summary>
+        /// <param name="x"></param>
         private void NewButton(Button x)
         {
-            x.FontSize = tempColor.FontSize;
-            x.FontStyle = tempColor.FontStyle;
-            x.FontFamily = tempColor.FontFamily;
-            x.BorderBrush = tempColor.BorderBrush;
+            x.FontSize = tempButton.FontSize;
+            x.FontStyle = tempButton.FontStyle;
+            x.FontFamily = tempButton.FontFamily;
+            x.BorderBrush = tempButton.BorderBrush;
             x.Cursor = Cursors.Arrow;
-            x.FocusVisualStyle = tempColor.FocusVisualStyle;
-            x.Foreground = tempColor.Foreground;
-            x.Background = tempColor.Background;
+            x.FocusVisualStyle = tempButton.FocusVisualStyle;
+            x.Foreground = tempButton.Foreground;
+            x.Background = tempButton.Background;
         }
+
+        /// <summary>
+        /// Helper method for generating addresses
+        /// </summary>
+        /// <returns>Hex in string type</returns>
         private string To16SS()
         {
-            string temp; int temp1 = r.Next(0,16);
-            switch(temp1)
+            string temp; int temp1 = random.Next(0, 16);
+            switch (temp1)
             {
                 case 10: temp = "A"; break;
                 case 11: temp = "B"; break;
@@ -340,46 +458,58 @@ namespace GameFromFallout
             }
             return temp;
         }
-        private string Add(string text)
+
+        /// <summary>
+        /// Helper method for generating addresses
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        private string To16Add(string text)
         {
             string temp;
             temp = text.Substring(2, 4);
             if (temp[3] == 'F')
             {
-                temp = temp.Insert(3, AddChar(temp[3]));
+                temp = temp.Insert(3, To16AddChar(temp[3]));
                 temp = temp.Remove(4, 1);
                 if (temp[2] == 'F')
                 {
-                    temp = temp.Insert(2, AddChar(temp[2]));
+                    temp = temp.Insert(2, To16AddChar(temp[2]));
                     temp = temp.Remove(3, 1);
                     if (temp[1] == 'F')
                     {
-                        temp = temp.Insert(1, AddChar(temp[1]));
+                        temp = temp.Insert(1, To16AddChar(temp[1]));
                         temp = temp.Remove(2, 1);
-                        temp = temp.Insert(0, AddChar(temp[0]));
+                        temp = temp.Insert(0, To16AddChar(temp[0]));
                         temp = temp.Remove(1, 1);
                     }
                     else
                     {
-                        temp = temp.Insert(1, AddChar(temp[1]));
-                        temp = temp.Remove(2,1);
+                        temp = temp.Insert(1, To16AddChar(temp[1]));
+                        temp = temp.Remove(2, 1);
                     }
                 }
                 else
                 {
-                    temp = temp.Insert(2, AddChar(temp[2]));
+                    temp = temp.Insert(2, To16AddChar(temp[2]));
                     temp = temp.Remove(3, 1);
                 }
             }
             else
             {
-                temp = temp.Insert(3, AddChar(temp[3]));
+                temp = temp.Insert(3, To16AddChar(temp[3]));
                 temp = temp.Remove(4, 1);
             }
             temp = temp.Insert(0, "0x");
             return temp;
         }
-        private string AddChar(char v)
+
+        /// <summary>
+        /// Helper method for generating addresses
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        private string To16AddChar(char v)
         {
             string temp = "";
             switch (v)
@@ -403,42 +533,50 @@ namespace GameFromFallout
             }
             return temp;
         }
-        private void MouseEnterStartButtons(object sender, MouseEventArgs e)
+
+        /// <summary>
+        /// Closes window
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void exitButton(object sender, MouseEventArgs e)
         {
-                Button temp1 = (Button)e.Source;
-                Brush temp = temp1.Background;
-                temp1.Background = temp1.Foreground;
-                temp1.BorderBrush = temp1.Foreground;
-                temp1.Foreground = temp;
-                if (l != null && !cont)
-                    l.Content = ">" + temp1.Content;
+            Close();
         }
 
-
-        private void BackToMenu(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Sets difficulty as easy
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void StartEasy(object sender, RoutedEventArgs e)
         {
-            canvasSec.Children.Clear();
-            canvasSec.Children.Add(Easy);
-            canvasSec.Children.Add(Medium);
-            canvasSec.Children.Add(Hard);
+            difficulty = "easy";
+            Start();
         }
 
-        private void PressDownKey(object sender, KeyEventArgs e)
+        /// <summary>
+        /// Sets difficulty as medium
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void StartMedium(object sender, RoutedEventArgs e)
         {
-            if (rest)
-            {
-                rest = false;
-
-                canvasSec.Children.Clear();
-                canvasSec.Children.Add(Easy);
-                canvasSec.Children.Add(Medium);
-                canvasSec.Children.Add(Hard);
-            }
-            if (cont)
-            {
-                cont = false;
-                Start();
-            }
+            difficulty = "medium";
+            Start();
         }
+
+        /// <summary>
+        /// Sets difficulty as hard
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void StartHard(object sender, RoutedEventArgs e)
+        {
+            difficulty = "hard";
+            Start();
+        }
+
+        #endregion
     }
 }

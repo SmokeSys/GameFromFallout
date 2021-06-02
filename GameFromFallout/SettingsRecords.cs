@@ -5,8 +5,10 @@ using System.Linq;
 
 namespace GameFromFallout
 {
-
-    [Serializable]
+    /// <summary>
+    /// Class for interacting with a words dictionary
+    /// </summary>
+    [Serializable]    
     public class SettingsRecords
     {
         public string Difficult { get; set; }
@@ -21,6 +23,9 @@ namespace GameFromFallout
             HardWords = new List<string>();
             //SortWords();
         }
+        /// <summary>
+        /// Change/update the words dictionary
+        /// </summary>
         public void UpdateWords()
         {
             StreamReader fstr = new StreamReader("words.txt");
@@ -43,9 +48,19 @@ namespace GameFromFallout
                     WordsCount++;
                 }
             }
+            fstr.Close();
+            if (EasyWords.Count < 10 || MediumWords.Count < 10 || HardWords.Count < 10)
+            {
+                throw new Exception("Not enough words");
+            }
         }
+        /// <summary>
+        /// Sorting a dictionary by symbols from a file and overwriting to a file
+        /// <para>"words.txt" is necessary for correct work!</para>
+        /// <para>"words.txt" format is one word per line</para>
+        /// </summary>
         private void SortWords()
-        {
+        {   
             StreamReader fstr = new StreamReader("words.txt");
             string temp = "";
             List<string> tempL = new List<string>();
