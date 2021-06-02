@@ -1,0 +1,41 @@
+﻿<Window x:Name="WindowMain" x:Class="GameFromFallout.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GameFromFallout"
+        mc:Ignorable="d"
+        Title="FalloutTerminal" ResizeMode="NoResize" WindowStyle="None" Height="600" Width="1100" Icon="d:\GameFromFallout\GameFromFallout\GameFromFallout\bin\Debug\Icon.ico" Topmost="True">
+    <Window.Resources>
+        <Style TargetType="{x:Type Button}">
+            <Style.Triggers>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="RenderTransform">
+                        <Setter.Value>
+                            <ScaleTransform ScaleX="0.85" ScaleY="0.85"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+            <Setter Property="RenderTransformOrigin" Value="0.5, 0.5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="brdr" TextBlock.Foreground="{TemplateBinding Foreground}" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding Content}" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
+        </Style>
+    </Window.Resources>
+    <Canvas x:Name="canvasMain">
+        <Canvas x:Name ="canvasSec" Width="795" Height="415" Canvas.Left="150" Canvas.Top="60" KeyDown="PressDownKey">
+            <Button x:Name="Easy" Content="Easy" Height="20" Width="80" Background="#010504" BorderBrush="#010504" Foreground="#37fc8b" Canvas.Left="20" Canvas.Top="10" FontSize="14" FontWeight="Bold" Cursor="Arrow" Click="StartEasy" MouseEnter="MouseEnterStartButtons" MouseLeave="MouseEnterStartButtons"/>
+            <Button x:Name="Back" Content="Back" Height="20" Width="80" Background="#010504" BorderBrush="#010504" Foreground="#37fc8b" Canvas.Left="705" Canvas.Top="14" FontSize="14" FontWeight="Bold" Cursor="Arrow" Click="BackToMenu" MouseEnter="MouseEnterStartButtons" MouseLeave="MouseEnterStartButtons"/>
+            <Button x:Name="Medium" Content="Medium" Height="20" Width="80" Background="#010504" BorderBrush="#010504" Foreground="#37fc8b" Canvas.Left="120" Canvas.Top="10" FontSize="14" FontWeight="Bold" Cursor="Arrow" Click="StartMedium" MouseEnter="MouseEnterStartButtons" MouseLeave="MouseEnterStartButtons"/>
+            <Button x:Name="Hard" Content="Hard" Height="20" Width="80" Background="#010504" BorderBrush="#010504" Foreground="#37fc8b" Canvas.Left="220" Canvas.Top="10" FontSize="14" FontWeight="Bold" Cursor="Arrow" Click="StartHard" MouseEnter="MouseEnterStartButtons" MouseLeave="MouseEnterStartButtons"/>
+        </Canvas>
+    </Canvas>
+</Window>
